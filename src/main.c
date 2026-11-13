@@ -51,7 +51,7 @@ unsigned int countOccur(FILE* haystack, const char* needle){
     return occurences;
 }
 
-char* getCpu(FILE* cpuid){
+char* get_cpu(FILE* cpuid){
     //error(1, 0, "displayCpu is not impemented");
     char* line = NULL;
     size_t num = 0;
@@ -102,7 +102,7 @@ char* get_value(char* line){
 
 char* UNKNOWN = "Unknown";
 
-void getDistro(FILE* osrel){
+void get_distro(FILE* osrel){
     char* line = NULL ;
     char
         * id = NULL,
@@ -155,11 +155,11 @@ void checkOS(void) {
     if (osrel == NULL)
         perror("fopen(\"/etc/os-release\", \"r\")");
 
-    getDistro(osrel);
+    get_distro(osrel);
 }
 
 // gets all packages for all supported operating systems
-char* getPackages(void) {
+char* get_packages(void) {
     size_t packLen = 0;
     size_t packSize = 32;
     char* packages = malloc(packSize);
@@ -198,7 +198,7 @@ void print(const char* str1, const char* str2) {
     printf("\x1b[%dm%s\x1b[%dm\n", secondaryColor, str2, resetColor);
 }
 
-char* getUser(void) {
+char* get_user(void) {
     struct passwd* pass = getpwuid(getuid());
 
     if (pass == NULL)
@@ -212,7 +212,7 @@ char* getUser(void) {
     return pass->pw_name;
 }
 
-char* getHost(void) {
+char* get_host(void) {
     char* hostname = malloc(1024);
     memset(hostname, 0, 1024);
 
@@ -223,7 +223,7 @@ char* getHost(void) {
     return hostname;
 }
 
-char* getShell(void) {
+char* get_shell(void) {
     if (shell)
         return shell;
 
@@ -236,7 +236,7 @@ char* getShell(void) {
     return shell;
 }
 
-char* getWServer(void){
+char* get_w_server(void){
     char* DISPLAY  = getenv("DISPLAY");
     char* WDISPLAY = getenv("WAYLAND_DISLAY");
     bool displayIsWayland = (DISPLAY && (strcmp(DISPLAY, "wayland") == 0));
@@ -257,17 +257,17 @@ int main() {
     checkOS();
     if (os == NULL) return 1;
     if (displayHostname) {
-        char* user = getUser();
-        char* host = getHost();
+        char* user = get_user();
+        char* host = get_host();
 
         // user @ hostname \0
-        char* hostData = malloc(strlen(user) + 1 + strlen(host) + 1);
-        strcpy(hostData, user);
-        strcat(hostData, "@");
-        strcat(hostData, host);
+        char* host_data = malloc(strlen(user) + 1 + strlen(host) + 1);
+        strcpy(host_data, user);
+        strcat(host_data, "@");
+        strcat(host_data, host);
 
-        print("", hostData);
-        free(hostData);
+        print("", host_data);
+        free(host_data);
         free(host);
     }
 
@@ -275,22 +275,22 @@ int main() {
         print("os", os);
 
     if (displayShell)
-        print("sh", getShell());
+        print("sh", get_shell());
 
     if (displayPackages)
-        print("pkgs", getPackages());
+        print("pkgs", get_packages());
 
     if (displayKernelVersion)
         print("kernel", kernelVersion);
 
     if (displayCpu) {
         FILE* cpuin = fopen("/proc/cpuinfo", "r");
-        print("cpu", getCpu(cpuin));
+        print("cpu", get_cpu(cpuin));
         fclose(cpuin);
     }
 
     if (displayServer)
-        print("display", getWServer());
+        print("display", get_w_server());
 
     return 0;
 }
