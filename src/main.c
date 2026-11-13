@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include "config.h"
 
-
 // variables
 char* os;
 char* kernelVersion;
@@ -183,7 +182,7 @@ void print(const char* str1, const char* str2) {
     printf("\x1b[%dm%s\x1b[%dm\n", secondaryColor, str2, resetColor);
 }
 
-char* getUser(void){
+char* getUser(void) {
     struct passwd* pass = getpwuid(getuid());
 
     if(pass == NULL) {
@@ -198,7 +197,7 @@ char* getUser(void){
     return pass->pw_name;
 }
 
-char* getHost(void){
+char* getHost(void) {
     char* hostname = malloc(1024);
     memset(hostname, 0, 1024);
     // 1023 to account for the lack of a terminating NULL byte
@@ -209,9 +208,10 @@ char* getHost(void){
     return hostname;
 }
 
-char* getShell(void){
-    if(shell)
+char* getShell(void) {
+    if(shell) {
         return shell;
+    }
 
     struct passwd* pass = getpwuid(getuid());
     if(pass == NULL) {
@@ -221,6 +221,23 @@ char* getShell(void){
 
     shell = pass->pw_shell;
     return shell;
+}
+
+char* getWServer(void){
+    char* DISPLAY  = getenv("DISPLAY");
+    char* WDISPLAY = getenv("WAYLAND_DISLAY");
+    bool displayIsWayland = (DISPLAY && (strcmp(DISPLAY, "wayland") == 0));
+    bool X11 = ( DISPLAY != NULL && !displayIsWayland);
+    bool way = (WDISPLAY != NULL ||  displayIsWayland);
+    char all = (X11 + (way << 1));
+
+    char* ret = "Unknown";
+    switch (all) {
+        case 1: ret = "X11"           ; break ;
+        case 2: ret = "Wayland"       ; break ;
+        case 3: ret = "X11 | Wayland" ; break ;
+    }
+    return strdup(ret);
 }
 
 int main() {
@@ -261,6 +278,10 @@ int main() {
         FILE* cpuin = fopen("/proc/cpuinfo", "r");
         print("cpu", getCpu(cpuin));
         fclose(cpuin);
+    }
+
+    if(displayServer){
+        print("display", getWServer());
     }
 
     return 0;

@@ -11,3 +11,4 @@
 #define displayShell (true)
 #define displayPackages (true)
 #define displayCpu (true)
+#define displayServer (true)
