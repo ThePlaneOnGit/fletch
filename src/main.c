@@ -87,17 +87,7 @@ char* getCpu(FILE* cpuid){
     return ret;
 }
 
-void getDistro(FILE* osrel){
-    char* line = NULL ;
-    size_t num = 0    ;
-    for (;;) {
-        getline(&line, &num, osrel);
-        if (line == NULL) perror("getline");
-        if (*line == 'I' && strstr(line, "ID=")) break;
-        line = NULL;
-        free(line);
-    }
-
+char* get_value(char* line){
     char* after = strchr(line, '=');
 
     after[strlen(after) - 1] = 0;
@@ -107,8 +97,42 @@ void getDistro(FILE* osrel){
         after[strlen(after) - 1] = 0;
     }
 
-    os = strdup(after);
-    free(line);
+    return after;
+}
+
+char* UNKNOWN = "Unknown";
+
+void getDistro(FILE* osrel){
+    char* line = NULL ;
+    char
+        * id = NULL,
+        * name = NULL,
+        * pname = NULL;
+
+    size_t num = 0    ;
+    while (getline(&line, &num, osrel) > 0) {
+        if (line == NULL) perror("getline");
+        if (*line == 'I' && strstr(line, "ID="))
+            id = strdup(get_value(line));
+        if (*line == 'N' && strstr(line, "NAME="))
+            name = strdup(get_value(line));
+        if (*line == 'P' && strstr(line, "PRETTY_NAME="))
+            pname = strdup(get_value(line));
+        line = NULL;
+    }
+
+    if (pname){
+        os = strdup(pname);
+        free(name);
+        free(id);
+    } else if (name) {
+        os = strdup(name);
+        free(id);
+    } else if (id) {
+        os = strdup(id);
+    } else {
+        os = UNKNOWN;
+    }
 }
 
 void checkOS(void) {
