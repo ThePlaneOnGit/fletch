@@ -12,3 +12,4 @@
 #define displayPackages (true)
 #define displayCpu (true)
 #define displayServer (true)
+#define displayMemory (true)

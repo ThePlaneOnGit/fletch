@@ -1,6 +1,7 @@
 #include <error.h>
 #include <pwd.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -253,6 +254,42 @@ char* get_w_server(void){
     return strdup(ret);
 }
 
+// Adapted from https://gist.github.com/dgoguerra/7194777
+char* human_size(uint64_t bytes){
+	char *suffix[] = {"B", "KB", "MB", "GB", "TB"};
+	char length = sizeof(suffix) / sizeof(suffix[0]);
+
+	int i = 0;
+	double dblBytes = bytes;
+
+	if (bytes >= 1024) {
+		for (i = 0; (bytes / 1024) > 0 && i<length-1; i++, bytes /= 1024)
+			dblBytes = bytes / 1024.0;
+	}
+
+      char* fmt = "%.02lf%s";
+      char* output = malloc(snprintf(NULL, 0, fmt, dblBytes, suffix[i]));
+
+	sprintf(output, "%.02lf%s", dblBytes, suffix[i]);
+	return output;
+}
+
+uint64_t total_memory(void){
+    long pages = sysconf(_SC_PHYS_PAGES);
+    long page_size = sysconf(_SC_PAGE_SIZE);
+    return pages * page_size;
+}
+
+char* get_mem(void){
+    uint64_t mem = total_memory();
+    char* mem_str = human_size(mem);
+
+    const char* fmt = "Available: %s";
+    char* buf = malloc(snprintf(NULL, 0, fmt, mem_str));
+    sprintf(buf, fmt, mem_str);
+    return buf;
+}
+
 int main() {
     checkOS();
     if (os == NULL) return 1;
@@ -288,6 +325,9 @@ int main() {
         print("cpu", get_cpu(cpuin));
         fclose(cpuin);
     }
+
+    if (displayMemory)
+        print("memory", get_mem());
 
     if (displayServer)
         print("display", get_w_server());
