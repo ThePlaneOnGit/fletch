@@ -284,7 +284,7 @@ char* get_mem(void){
     uint64_t mem = total_memory();
     char* mem_str = human_size(mem);
 
-    const char* fmt = "Available: %s";
+    const char* fmt = "Total: %s";
     char* buf = malloc(snprintf(NULL, 0, fmt, mem_str));
     sprintf(buf, fmt, mem_str);
     return buf;
